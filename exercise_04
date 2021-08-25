@@ -1,0 +1,99 @@
+```sql
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_clients_by_state`(state char(2))
+BEGIN
+	if state is null then
+    set state = 'ca';
+    end if;
+select *
+from clients c
+where c.state = state;
+END
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_clients_by_state`(state char(2))
+BEGIN
+	if state is null then
+		select * from clients;
+	else
+		select * from clients c
+		where c.state = state;
+    end if;
+END
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_clients_by_state`(state char(2))
+BEGIN
+	select * from clients c
+	where c.state = ifnull(state, c.state);
+END
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_payments`
+	(client_id int, payment_method tinyint)
+BEGIN
+select * from payments p
+where (p.client_id = ifnull(client_id, p.client_id)) and
+	(p.payment_method = ifnull(payment_method, p.payment_method));
+END
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `make_payment`(
+	invoice_id INT,
+    payment_amount DECIMAL(9,2),
+    payment_date DATE
+)
+BEGIN
+	IF payment_amount <= 0 THEN 
+		SIGNAL SQLSTATE '22003'
+        SET MESSAGE_TEXT = 'Invalid payment amount';
+	end if;
+    
+	UPDATE invoices i
+    SET 
+    i.payment_total = payment_amount,
+    i.payment_date = payment_date
+    where i.invoice_id = invoice_id;
+END
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_unpaid_invoices_for_client`(
+	client_id int,
+    OUT invoices_count int,
+    OUT invoices_total decimal(9,2))
+BEGIN
+	select count(*), sum(invoice_total)
+    into invoices_count,invoices_total
+	from invoices i
+	where i.client_id = client_id and i.payment_total = 0;
+END
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_risk_factor`()
+BEGIN
+	declare risk_factor decimal(9, 2) default 0;
+    declare invoices_total decimal(9, 2);
+    declare invoices_count int;
+    
+    select count(*),sum(invoice_total)
+    into invoices_count,invoices_total
+    from invoices;
+    
+    set risk_factor = invoices_total / invoices_count * 5;
+    
+    select risk_factor;
+END
+
+CREATE DEFINER=`root`@`localhost` FUNCTION `get_risk_factor_for_client`(client_id INT)
+	RETURNS int
+    READS SQL DATA
+BEGIN
+	declare risk_factor decimal(9, 2) default 0;
+    declare invoices_total decimal(9, 2);
+    declare invoices_count int;
+    
+    select count(*),sum(invoice_total)
+    into invoices_count,invoices_total
+    from invoices i
+    where i.client_id = client_id;
+    
+    set risk_factor = invoices_total / invoices_count * 5;
+    
+	return ifnull(risk_factor,0);
+
+END
+
+```
