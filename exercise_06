@@ -1,0 +1,155 @@
+```sql
+show variables like 'transaction_isolation';
+-- set transaction isolation level serializable;
+-- set session transaction isolation level serializable;
+-- set global transaction isolation level serializable;
+
+create database if not exists sql_store2;
+use sql_store2;
+-- drop table if exists customers;
+create table if not exists customers
+(
+	customer_id int primary key auto_increment,
+    first_name varchar(50) not null,
+    points int not null default 0,
+    email varchar(255) not null unique
+) ;
+
+alter table customers
+add last_name varchar(50) not null after first_name,
+add city varchar(50) not null,
+modify column first_name varchar(55) default '',
+drop points
+;
+
+create database if not exists sql_store2;
+use sql_store2;
+drop table if exists ordders;
+drop table if exists customers;
+create table if not exists customers
+(
+	customer_id int primary key auto_increment,
+    first_name varchar(50) not null,
+    points int not null default 0,
+    email varchar(255) not null unique
+);
+
+create table orders
+(
+	order_id    int primary key,
+    customer_id int not null,
+    foreign key fk_orders_customers(customer_id)
+		references customers(customer_id)
+        on update cascade
+        on delete no action
+);
+
+alter table customers
+add last_name varchar(50) not null after first_name,
+add city varchar(50) not null,
+modify column first_name varchar(55) default '',
+drop points
+;
+
+
+alter table orders
+	add primary key(order_id),
+    drop primary key,
+	drop foreign key fk_orders_customers,
+    add foreign key fk_orders_customers(customer_id)
+		references customers(customer_id)
+        on update cascade
+        on delete no action;
+
+show charset; --  展示所有可以设置的语言
+create database db_name
+	character set latin1;
+
+alter database db_name
+	character set latin1;
+    
+create table table1
+(lieming varchar(20) character set latin1 not null)
+character set latin1;
+
+alter table table1
+character set latin1
+
+alter table customers
+engine = innodb
+
+use sql_store;
+explain select customer_id from customers where state = 'ca';
+-- select count(customer_id) from customers
+
+create index idx_state on customers(state);
+
+use sql_blog;
+select *
+from posts
+where title like '%react redux%' or
+	body like '%react redux%'
+-- % 代表了任意数量的字符
+
+select *, match(title, body) against('react redux')
+from posts
+where match(title, body) against('react -redux +form' in boolean mode);
+
+-- create fulltext index idx_title_body on posts(title, body);
+
+-- select *, match(title, body) against(' react redux')
+-- from posts
+-- where match(title, body) against(' react redux');
+
+-- select *, match(title, body) against(' react redux')
+-- from posts
+-- where match(title, body) against(' react -redux' in boolean mode);
+--  不带 redux 文件
+
+-- select *, match(title, body) against('react redux')
+-- from posts
+-- where match(title, body) against('react -redux +form' in boolean mode);
+
+select *
+from posts
+where match(title, body) against('"handling a form"' in boolean mode);
+
+-- 短的类似地址、名字等，可以用前缀索引；长的微博等，可以使用全文索引。
+
+use sql_store;
+show indexes in customers;
+create index idx_state_points on customers(state, points);
+explain select customer_id from customers
+where state = 'ca' and points > '1000';
+
+-- create user me@127.0.0.1;
+-- create user john@localhost;
+--  增加域范围create user john@域名.com;
+--  增加子网范围 create user john@'%. 域名.com';
+-- 任意地方连接 create user john
+-- 设置密码 create user john identified by '1234';
+
+-- select * from mysql.user; 查看用户
+-- drop user 域名；删除用户
+
+-- set password  用户名 = ’密码‘；修改密码
+
+-- 1：web、desktop application
+-- create user moon_app identified by '1234';
+-- grant select, insert, update, delete, execute
+-- on sql_store.*
+-- to moon_app;
+
+-- 2：admin
+-- grant all on *.* to moon_app;
+
+-- show grants;查看当前用户权限
+-- show grants for moon_app; 查看具体用户权限
+
+-- 撤销权限
+-- revoke create 权限 on sql_store.* from moon_app;
+-- grant create  权限  on sql_store.* to moon_app; 对比增加授权
+
+
+
+```
